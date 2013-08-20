@@ -1,0 +1,8 @@
+{
+  "name": "nnp",
+  "version": "0.0.1",
+  "description": "Project structure generator",
+  "license": "MIT",
+  "dependencies": {},
+  "bin": { "nnp": "./bin/nnp" }
+}
