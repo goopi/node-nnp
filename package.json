@@ -3,6 +3,9 @@
   "version": "0.0.1",
   "description": "Project structure generator",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "commander": "1.3.2",
+    "colors": "0.6.x"
+  },
   "bin": { "nnp": "./bin/nnp" }
 }

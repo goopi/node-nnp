@@ -1,3 +1,209 @@
 #!/usr/bin/env node
 // vim:ft=javascript:
 
+/**
+ * Module dependencies.
+ */
+
+var fs = require('fs');
+var join = require('path').join;
+var spawn = require('child_process').spawn;
+var colors = require('colors');
+var program = require('commander');
+
+/**
+ * Version.
+ */
+
+var version = '0.0.1';
+
+/**
+ * Project types.
+ */
+
+var types = ['default', 'modular'];
+
+/**
+ * Questions.
+ */
+
+var questions = {
+  project: 'Project name: ',
+  description: 'Project description: ',
+  name: 'Name: ',
+  username: 'Username: ',
+  email: 'Email: '
+};
+
+/**
+ * Initialize a new `Project` with the given `type` and `dest`.
+ *
+ * @param {String} type
+ * @param {String} dest
+ * @api public
+ */
+
+function Project(type, dest) {
+  this.type = type;
+  this.dest = fs.realpathSync(dest);
+  this.template = fs.realpathSync('templates') + '/' + type;
+  this.directories = {};
+  this.values = {};
+}
+
+/**
+ * Prototype.
+ */
+
+Project.prototype = {
+
+  /**
+   * Initialize project.
+   *
+   * @api public
+   */
+
+  init: function(){
+    console.log();
+    console.log('New project'.underline.green);
+    console.log();
+    console.log('Project type: '.yellow + this.type.cyan);
+    console.log();
+
+    var self = this;
+    var keys = Object.keys(questions);
+
+    function next() {
+      var desc;
+      var key = keys.shift();
+
+      function done(value) {
+        self.values[key] = String(value).trim();
+        next();
+      }
+
+      if (key) {
+        desc = questions[key];
+        program.prompt(desc, done);
+      } else {
+        process.stdin.destroy();
+        self.create();
+      }
+    }
+
+    // init git
+    spawn('git', ['init', this.dest]);
+
+    // start asking
+    next();
+  },
+
+  /**
+   * Return the template files.
+   *
+   * @return {Array}
+   * @api private
+   */
+
+  get files() {
+    var self = this;
+    var files = [];
+
+    (function next(dir) {
+      fs.readdirSync(dir).forEach(function(file){
+        files.push(file = dir + '/' + file);
+        var stat = fs.statSync(file);
+        if (stat.isDirectory()) {
+          self.directories[file] = true;
+          next(file);
+        }
+      });
+    })(this.template);
+
+    return files;
+  },
+
+  /**
+   * Create the project files.
+   *
+   * @api private
+   */
+
+  create: function(){
+    var self = this;
+    console.log();
+    console.log('Creating project files...'.yellow);
+    console.log();
+
+    this.files.forEach(function(file){
+      var path = self.parse(file);
+      var out = join(self.dest, path.replace(self.template, ''));
+
+      // directory
+      if (self.directories[file]) {
+        try {
+          fs.mkdirSync(out, 0775);
+          console.log('   create : '.grey + out.blue);
+        } catch (err) {
+          // ignore
+        }
+      // file
+      } else {
+        var str = self.parse(fs.readFileSync(file, 'utf8'));
+        fs.writeFileSync(out, str);
+        console.log('   create : '.grey + out.blue);
+      }
+    });
+
+    console.log();
+    console.log('Happy Coding!'.green);
+    console.log();
+  },
+
+  /**
+   * Parse `str`.
+   *
+   * @return {String}
+   * @api private
+   */
+
+  parse: function(str){
+    // TODO: add current date {{date}}
+    var self = this;
+    return str
+      .replace(/\{\{([^}]+)\}\}/g, function(_, key){
+        return self.values[key];
+      });
+  }
+};
+
+program
+  .version(version)
+  .usage('[options] [dir]')
+  .option('-t, --type [name]', 'use the specified type [default]', 'default')
+  .parse(process.argv);
+
+/**
+ * Destination dir.
+ */
+
+var dest = program.args.shift() || process.cwd();
+
+/**
+ * Project type.
+ */
+
+var type = program.type;
+if (!~types.indexOf(type)) {
+  console.log('Invalid project type'.red);
+  process.exit(1);
+}
+
+// create destination dir if necessary
+try {
+  fs.mkdirSync(dest, 0775);
+} catch (err) {
+  // ignore
+}
+
+(new Project(type, dest)).init();

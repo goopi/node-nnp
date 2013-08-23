@@ -1,0 +1,17 @@
+{
+  "name": "{{project}}",
+  "version": "0.0.1",
+  "description": "{{description}}",
+  "author": "{{name}} <{{email}}>",
+  "keywords": [],
+  "private": true,
+  "dependencies": {
+    "express": "3.x",
+    "debug": "*",
+    "jade": "0.27.x"
+  },
+  "engines": { "node": ">= 0.10.x" },
+  "scripts": {
+    "start": "node server.js"
+  }
+}

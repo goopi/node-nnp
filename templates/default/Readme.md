@@ -1,0 +1,8 @@
+
+# {{project}}
+
+  {{description}}
+
+## License 
+
+  MIT
