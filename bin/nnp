@@ -44,9 +44,10 @@ var questions = {
  */
 
 function Project(type, dest) {
+  var templates = __dirname + '/../templates';
   this.type = type;
   this.dest = fs.realpathSync(dest);
-  this.template = fs.realpathSync('templates') + '/' + type;
+  this.template = templates + '/' + type;
   this.directories = {};
   this.values = {};
 }
