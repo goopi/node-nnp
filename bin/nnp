@@ -95,6 +95,9 @@ Project.prototype = {
     // init git
     spawn('git', ['init', this.dest]);
 
+    // create .gitignore
+    fs.writeFile(join(self.dest, '.gitignore'), 'node_modules\n', null);
+
     // start asking
     next();
   },
