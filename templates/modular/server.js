@@ -21,13 +21,16 @@ app.configure(function(){
   app.use(express.static(__dirname + '/public'));
   app.use(express.favicon());
   app.use(app.router);
-  // custom JSON 404 middleware
-  app.use(function(req, res){
-    res.send(404, { error: '404' });
-  });
+
   // error handling middleware
+
+  app.use(function(req, res){
+    if (req.is('json')) return res.send(404, { error: '404' });
+    res.send(404, 'Page not found');
+  });
   app.use(function(err, req, res, next){
-    res.send(err.status || 500, { error: err.message });
+    if (req.is('json')) return res.send(500, { error: err.message });
+    res.send(500, 'Internal Server Error');
   });
 });
 
