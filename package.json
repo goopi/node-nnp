@@ -2,6 +2,7 @@
   "name": "nnp",
   "version": "0.0.1",
   "description": "Project structure generator",
+  "repository": "goopi/node-nnp",
   "license": "MIT",
   "dependencies": {
     "commander": "1.3.2",
